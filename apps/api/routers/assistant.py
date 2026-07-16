@@ -37,10 +37,15 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
 
     if is_example_post_question(normalized_question):
         examples = "; ".join(
-            f"{record.source}: {record.cleaned_text}" for record in top
+            (
+                f"{record.source} on {record.published_at.date().isoformat()} "
+                f"for {record.analysis.company}: {record.cleaned_text}"
+            )
+            for record in top
         )
         answer = (
-            "Here are example posts currently in the filtered feedback set. "
+            "Here are example posts currently in the filtered feedback set, "
+            "including their publication dates. "
             f"{examples or 'No matching posts are available for the selected filters.'}"
         )
         return AssistantResponse(

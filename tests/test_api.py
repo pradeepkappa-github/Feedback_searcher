@@ -48,10 +48,12 @@ def test_assistant_explains_post_definition():
 def test_assistant_can_show_example_posts():
     response = client.post(
         "/api/assistant/ask",
-        json={"question": "show me post examples", "company": "AT&T", "days": 7},
+        json={"question": "show me post examples which date it is", "company": "AT&T", "days": 7},
     )
 
     assert response.status_code == 200
     payload = response.json()
     assert "example posts" in payload["answer"]
+    assert "publication dates" in payload["answer"]
+    assert "2026-07-" in payload["answer"]
     assert payload["supporting_record_ids"]
