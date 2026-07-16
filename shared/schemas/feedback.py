@@ -14,6 +14,9 @@ class RawFeedbackRecord(BaseModel):
     text: str = Field(min_length=3)
     published_at: datetime
     author_reference: str
+    public_author_name: str | None = None
+    public_author_url: HttpUrl | None = None
+    public_author_note: str | None = None
     location: str | None = None
     language: str = "English"
 
@@ -60,4 +63,3 @@ class AssistantResponse(BaseModel):
     records_analyzed: int
     supporting_record_ids: list[str]
     supporting_source_urls: list[HttpUrl]
-

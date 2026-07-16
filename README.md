@@ -92,6 +92,8 @@ curl -X POST http://127.0.0.1:8000/api/vector/search \
 
 The first implementation uses a deterministic local hashed embedding store at `data/vector_store.json`. It is meant as a swappable interface for Qdrant, Chroma, pgvector, OpenSearch vector search, or an existing enterprise vector database.
 
+Author metadata is privacy-limited. Records always keep an anonymized `author_reference`; optional `public_author_name` and `public_author_url` are stored only when a compliant source feed/API explicitly exposes them.
+
 ## Compliance Principles
 
 Collection code must respect website terms, robots rules, API policies, rate limits, and privacy requirements. Feedback records retain source attribution and anonymized author references. PII masking belongs in the processing pipeline before records are used for analytics or summaries.

@@ -36,5 +36,7 @@ The source connector layer is designed for compliant public-feedback collection.
 - Use official APIs, approved exports, written permission, or legally permitted public datasets.
 - Respect platform terms, robots rules where applicable, privacy requirements, and rate limits.
 - Store source URLs and anonymized author references.
+- Store public author display names/profile URLs only when the source feed/API explicitly exposes them.
+- Do not infer real-world identity, contact details, employer, location, or private attributes from a username.
 - Do not collect private, gated, or personal data without explicit authorization.
 - Keep connector-specific policy checks close to each connector implementation.

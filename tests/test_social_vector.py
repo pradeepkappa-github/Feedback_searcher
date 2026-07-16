@@ -40,6 +40,10 @@ def test_reddit_live_rss_collects_one_public_record(monkeypatch):
         <id>reddit-post-1</id>
         <title>AT&amp;T fiber outage in Houston</title>
         <updated>2026-07-16T20:01:02+00:00</updated>
+        <author>
+          <name>u/public_user</name>
+          <uri>https://www.reddit.com/user/public_user</uri>
+        </author>
         <link rel="alternate" href="https://www.reddit.com/r/ATT/comments/example" />
         <content type="html">
           &lt;p&gt;Status page says no outage but fiber is down.&lt;/p&gt;
@@ -78,4 +82,7 @@ def test_reddit_live_rss_collects_one_public_record(monkeypatch):
     assert records[0].source == "Reddit"
     assert records[0].company_hint == "AT&T"
     assert records[0].product_hint == "Fiber"
+    assert records[0].public_author_name == "u/public_user"
+    assert str(records[0].public_author_url) == "https://www.reddit.com/user/public_user"
+    assert "profile URL" in records[0].public_author_note
     assert "fiber is down" in records[0].text

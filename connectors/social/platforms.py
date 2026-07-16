@@ -150,6 +150,8 @@ class RedditConnector(BaseSocialConnector):
         title = text_or_empty(entry, "atom:title")
         content = text_or_empty(entry, "atom:content")
         updated = text_or_empty(entry, "atom:updated")
+        author_name = text_or_empty(entry, "atom:author/atom:name")
+        author_uri = text_or_empty(entry, "atom:author/atom:uri")
         source_url = entry_url(entry) or "https://www.reddit.com"
         entry_id = text_or_empty(entry, "atom:id") or source_url
         text = clean_feed_text(f"{title}. {content}")
@@ -163,6 +165,9 @@ class RedditConnector(BaseSocialConnector):
                 text=text[:2000],
                 published_at=parse_feed_datetime(updated),
                 author_reference=f"reddit-live-{stable_suffix(entry_id)}",
+                public_author_name=author_name or None,
+                public_author_url=author_uri or None,
+                public_author_note=public_author_note(author_name, author_uri),
                 location=None,
             )
         ]
@@ -230,6 +235,14 @@ def clean_feed_text(value: str) -> str:
 
 def stable_suffix(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
+
+
+def public_author_note(author_name: str, author_uri: str) -> str:
+    if author_name and author_uri:
+        return "Public Reddit feed exposed author display name and profile URL."
+    if author_name:
+        return "Public Reddit feed exposed author display name only."
+    return "No public author profile metadata was exposed by the feed item."
 
 
 def parse_feed_datetime(value: str) -> datetime:

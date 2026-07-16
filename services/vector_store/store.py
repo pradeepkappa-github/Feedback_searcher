@@ -33,6 +33,11 @@ class LocalVectorStore:
                 "text": record.cleaned_text,
                 "source": record.source,
                 "source_url": str(record.source_url),
+                "public_author_name": record.public_author_name,
+                "public_author_url": str(record.public_author_url)
+                if record.public_author_url
+                else None,
+                "public_author_note": record.public_author_note,
                 "company": record.analysis.company,
                 "product": record.analysis.product,
                 "topics": record.analysis.topics,
@@ -81,4 +86,3 @@ def vector_text(record: FeedbackRecord) -> str:
             record.location or "",
         ]
     )
-

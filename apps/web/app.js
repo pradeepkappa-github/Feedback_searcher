@@ -169,10 +169,26 @@ function renderFeedback() {
           ${record.analysis.topics.map((topic) => `<span class="tag">${escapeHtml(topic)}</span>`).join("")}
         </div>
         <p>${escapeHtml(record.cleaned_text)}</p>
-        <div class="meta">${escapeHtml(record.source)} · ${escapeHtml(record.location || "Unknown location")} · confidence ${percent(record.analysis.confidence)} · <a href="${record.source_url}">source</a></div>
+        <div class="meta">
+          ${escapeHtml(record.source)} ·
+          ${escapeHtml(record.location || "Unknown location")} ·
+          ${authorMeta(record)} ·
+          confidence ${percent(record.analysis.confidence)} ·
+          <a href="${record.source_url}">source</a>
+        </div>
       </article>
     `;
   }).join("") || "<p>No matching feedback records.</p>";
+}
+
+function authorMeta(record) {
+  if (record.public_author_name && record.public_author_url) {
+    return `public author <a href="${record.public_author_url}">${escapeHtml(record.public_author_name)}</a>`;
+  }
+  if (record.public_author_name) {
+    return `public author ${escapeHtml(record.public_author_name)}`;
+  }
+  return `author ${escapeHtml(record.author_reference)}`;
 }
 
 async function askQuestion() {
