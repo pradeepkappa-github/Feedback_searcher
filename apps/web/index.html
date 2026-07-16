@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Feedback Finder AI</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">FF</div>
+        <div>
+          <strong>Feedback Finder AI</strong>
+          <span>Evidence-based customer intelligence</span>
+        </div>
+      </div>
+      <nav>
+        <button class="active" data-view="overview">Overview</button>
+        <button data-view="trends">Trends</button>
+        <button data-view="explorer">Explorer</button>
+        <button data-view="story">AI Story</button>
+        <button data-view="sources">Sources</button>
+        <button data-view="domain">Domain</button>
+      </nav>
+      <p class="policy">Permitted public sources only: approved APIs, public datasets, rate limits, robots-aware collection, and anonymized authors.</p>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Telecom sprint · Domain-neutral platform</p>
+          <h1>Customer Feedback Intelligence</h1>
+        </div>
+        <div class="filters">
+          <select id="companyFilter">
+            <option value="">All companies</option>
+          </select>
+          <select id="sourceFilter">
+            <option value="">All sources</option>
+          </select>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <span>Grounded AI story</span>
+          <h2 id="heroTitle">Loading public feedback intelligence...</h2>
+          <p id="heroDetail"></p>
+        </div>
+        <form id="askForm" class="ask-box">
+          <label for="question">Ask a business question</label>
+          <input id="question" value="Why has AT&T customer sentiment declined during the past seven days?" />
+          <button>Ask AI</button>
+          <p id="answer"></p>
+        </form>
+      </section>
+
+      <section id="overview" class="view active">
+        <div class="metrics">
+          <article><span>Total feedback</span><strong id="totalFeedback">0</strong></article>
+          <article><span>Positive share</span><strong id="positiveShare">0%</strong></article>
+          <article><span>Negative share</span><strong id="negativeShare">0%</strong></article>
+          <article><span>Avg confidence</span><strong id="avgConfidence">0%</strong></article>
+        </div>
+        <div class="grid two">
+          <section class="panel">
+            <div class="panel-head"><h3>Company Comparison</h3><span>positive share</span></div>
+            <div id="companyBars" class="bars"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>Critical Issues</h3><span>priority-ranked</span></div>
+            <div id="criticalIssues" class="issues"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="trends" class="view">
+        <div class="grid two">
+          <section class="panel">
+            <div class="panel-head"><h3>Complaint Topics</h3><span>classified mentions</span></div>
+            <div id="topicBars" class="bars"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h3>Emerging Issue Rules</h3><span>MVP scoring</span></div>
+            <ol class="rules">
+              <li>Volume multiplied by sentiment severity</li>
+              <li>Urgency, impact, credibility, and confidence weighted into priority</li>
+              <li>Alerts emitted when priority score exceeds threshold</li>
+            </ol>
+          </section>
+        </div>
+      </section>
+
+      <section id="explorer" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Feedback Explorer</h3><span>source evidence and AI labels</span></div>
+            <input id="queryInput" placeholder="Search feedback, city, topic..." />
+          </div>
+          <div id="feedbackList" class="feedback-list"></div>
+        </section>
+      </section>
+
+      <section id="story" class="view">
+        <section class="panel story">
+          <div class="panel-head"><h3>Executive Story</h3><span id="storyConfidence">confidence</span></div>
+          <div id="storyBody"></div>
+        </section>
+      </section>
+
+      <section id="sources" class="view">
+        <section class="panel">
+          <div class="panel-head"><h3>Data Source Status</h3><span>phase-one connectors</span></div>
+          <div id="sourceStatus" class="source-grid"></div>
+        </section>
+      </section>
+
+      <section id="domain" class="view">
+        <section class="panel">
+          <div class="panel-head"><h3>Telecom Domain Pack</h3><span>configurable taxonomy</span></div>
+          <pre id="domainPack"></pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
+

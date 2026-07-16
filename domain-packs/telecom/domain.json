@@ -1,0 +1,56 @@
+{
+  "domain": "telecom",
+  "companies": ["AT&T", "Verizon", "T-Mobile", "Xfinity Mobile"],
+  "products": [
+    "Wireless",
+    "Fiber",
+    "Broadband",
+    "Prepaid",
+    "Postpaid",
+    "Business services",
+    "Device installment plans",
+    "Roaming",
+    "Customer support"
+  ],
+  "complaint_categories": [
+    "Billing",
+    "Unexpected charges",
+    "Network outage",
+    "Slow internet",
+    "Coverage",
+    "Device activation",
+    "Customer-support delay",
+    "Technician appointment",
+    "Cancellation",
+    "Promotion or discount"
+  ],
+  "customer_journey_stages": [
+    "Research",
+    "Purchase",
+    "Activation",
+    "Usage",
+    "Billing",
+    "Support",
+    "Cancellation"
+  ],
+  "priority_rules": [
+    "volume",
+    "sentiment_severity",
+    "rate_of_increase",
+    "customer_impact",
+    "source_credibility",
+    "business_importance"
+  ],
+  "industry_vocabulary": [
+    "fiber outage",
+    "activation fee",
+    "roaming charge",
+    "technician appointment",
+    "coverage map",
+    "port-in",
+    "device installment",
+    "gateway",
+    "promotion expiration"
+  ]
+}
+

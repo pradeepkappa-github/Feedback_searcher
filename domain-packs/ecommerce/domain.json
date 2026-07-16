@@ -1,0 +1,10 @@
+{
+  "domain": "ecommerce",
+  "companies": [],
+  "products": ["Marketplace", "Retail", "Subscription", "Seller services"],
+  "complaint_categories": ["Product quality", "Delivery", "Refunds", "Returns", "Seller behavior", "Payment problems"],
+  "customer_journey_stages": ["Browse", "Purchase", "Delivery", "Use", "Support", "Return"],
+  "priority_rules": ["volume", "sentiment_severity", "rate_of_increase", "customer_impact", "source_credibility"],
+  "industry_vocabulary": ["refund", "return label", "late delivery", "seller dispute", "payment failure"]
+}
+
