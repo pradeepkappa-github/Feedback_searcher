@@ -74,4 +74,5 @@ def test_assistant_returns_reddit_post_details():
     assert "available Reddit post details" in payload["answer"]
     assert "published" in payload["answer"]
     assert "author:" in payload["answer"]
-    assert "source URL:" in payload["answer"]
+    assert "demo placeholder source URL:" in payload["answer"]
+    assert "not a live Reddit URL" in payload["answer"]

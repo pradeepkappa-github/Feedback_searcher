@@ -151,12 +151,22 @@ def format_post_details(record) -> str:
     )
     author_note = f", author note: {record.public_author_note}" if record.public_author_note else ""
     location = record.location or "not publicly available"
+    source_description = source_url_description(str(record.source_url))
     return (
         f"Post {record.id}: source Reddit, published {record.published_at.isoformat()}, "
-        f"source URL: {record.source_url}, author: {author}{author_url}{author_note}, "
+        f"{source_description}, author: {author}{author_url}{author_note}, "
         f"company: {record.analysis.company}, product: {record.analysis.product or 'unknown'}, "
         f"location: {location}, sentiment: {record.analysis.sentiment_label} "
         f"({record.analysis.sentiment_score}), emotion: {record.analysis.emotion}, "
         f"topics: {', '.join(record.analysis.topics)}, confidence: {record.analysis.confidence}, "
         f"text: {record.cleaned_text}"
     )
+
+
+def source_url_description(source_url: str) -> str:
+    if "example.com" in source_url:
+        return (
+            f"demo placeholder source URL: {source_url} "
+            "(not a live Reddit URL; run live Reddit collection for a public Reddit link)"
+        )
+    return f"source URL: {source_url}"
