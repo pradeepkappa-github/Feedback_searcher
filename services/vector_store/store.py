@@ -33,6 +33,7 @@ class LocalVectorStore:
                 "text": record.cleaned_text,
                 "source": record.source,
                 "source_url": str(record.source_url),
+                "is_demo": is_demo_source_url(str(record.source_url)),
                 "public_author_name": record.public_author_name,
                 "public_author_url": str(record.public_author_url)
                 if record.public_author_url
@@ -53,6 +54,7 @@ class LocalVectorStore:
         *,
         company: str | None = None,
         source: str | None = None,
+        include_demo: bool = False,
         limit: int = 5,
     ) -> list[VectorSearchHit]:
         query_embedding = embed_text(query)
@@ -62,17 +64,31 @@ class LocalVectorStore:
                 continue
             if source and payload["source"] != source:
                 continue
+            if not include_demo and is_demo_payload(payload):
+                continue
             score = cosine_similarity(query_embedding, payload["embedding"])
             scored.append((score, payload))
 
         adapter = TypeAdapter(VectorSearchHit)
         return [
-            adapter.validate_python({"score": score, **payload})
+            adapter.validate_python(
+                {
+                    **payload,
+                    "score": score,
+                    "is_demo": is_demo_payload(payload),
+                }
+            )
             for score, payload in sorted(scored, key=lambda item: item[0], reverse=True)[:limit]
         ]
 
     def count(self) -> int:
         return len(self._records)
+
+    def count_live(self) -> int:
+        return sum(1 for payload in self._records.values() if not is_demo_payload(payload))
+
+    def count_demo(self) -> int:
+        return sum(1 for payload in self._records.values() if is_demo_payload(payload))
 
 
 def vector_text(record: FeedbackRecord) -> str:
@@ -86,3 +102,11 @@ def vector_text(record: FeedbackRecord) -> str:
             record.location or "",
         ]
     )
+
+
+def is_demo_source_url(source_url: str) -> bool:
+    return "example.com" in source_url
+
+
+def is_demo_payload(payload: dict) -> bool:
+    return bool(payload.get("is_demo", is_demo_source_url(payload.get("source_url", ""))))

@@ -48,6 +48,7 @@ def vector_search(
         request.query,
         company=request.company,
         source=request.source,
+        include_demo=request.include_demo,
         limit=request.limit,
     )
 
@@ -56,6 +57,8 @@ def vector_search(
 def vector_status(repo=Depends(get_repository)) -> dict:
     return {
         "documents": repo.vector_store.count(),
+        "live_documents": repo.vector_store.count_live(),
+        "demo_documents": repo.vector_store.count_demo(),
         "path": settings.vector_store_path,
         "embedding": "deterministic-hashed-local",
     }

@@ -44,6 +44,7 @@ class VectorSearchRequest(BaseModel):
     query: str = Field(min_length=2)
     company: str | None = None
     source: str | None = None
+    include_demo: bool = False
     limit: int = Field(default=5, ge=1, le=25)
 
 
@@ -58,3 +59,7 @@ class VectorSearchHit(BaseModel):
     topics: list[str]
     sentiment_score: float
     published_at: datetime
+    public_author_name: str | None = None
+    public_author_url: HttpUrl | None = None
+    public_author_note: str | None = None
+    is_demo: bool = False

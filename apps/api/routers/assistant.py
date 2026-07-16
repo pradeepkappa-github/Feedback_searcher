@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from apps.api.dependencies import get_repository
 from services.analytics.metrics import priority_score
 from shared.schemas.feedback import AssistantQuestion, AssistantResponse
+from shared.schemas.sources import VectorSearchHit
 
 router = APIRouter(tags=["assistant"])
 
@@ -20,12 +21,41 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
     normalized_question = question.question.strip().lower()
 
     if is_reddit_post_detail_question(normalized_question):
+        live_reddit_hits = repo.vector_store.search(
+            question.question,
+            source="Reddit",
+            include_demo=False,
+            limit=3,
+        )
+        if live_reddit_hits:
+            details = " ".join(format_vector_post_details(hit) for hit in live_reddit_hits)
+            answer = (
+                "Here are the available live Reddit post details from the VectorDB. "
+                f"{details} "
+                "Only public source metadata is shown; private identity or contact details "
+                "are not inferred."
+            )
+            return AssistantResponse(
+                answer=answer,
+                confidence=0.92,
+                records_analyzed=len(live_reddit_hits),
+                supporting_record_ids=[hit.id for hit in live_reddit_hits],
+                supporting_source_urls=[hit.source_url for hit in live_reddit_hits],
+            )
+
         reddit_records = [record for record in records if record.source.lower() == "reddit"]
-        reddit_top = sorted(reddit_records, key=priority_score, reverse=True)[:3]
+        live_reddit_records = [
+            record for record in reddit_records if not is_demo_url(str(record.source_url))
+        ]
+        reddit_top = sorted(live_reddit_records, key=priority_score, reverse=True)[:3]
         details = " ".join(format_post_details(record) for record in reddit_top)
+        no_live_message = (
+            "No live Reddit posts are available for the selected filters. "
+            "Run live Reddit collection first."
+        )
         answer = (
-            "Here are the available Reddit post details from the filtered feedback set. "
-            f"{details or 'No Reddit posts are available for the selected filters.'} "
+            "Here are the available live Reddit post details from the filtered feedback set. "
+            f"{details or no_live_message} "
             "Only public source metadata is shown; private identity or contact details "
             "are not inferred."
         )
@@ -164,9 +194,26 @@ def format_post_details(record) -> str:
 
 
 def source_url_description(source_url: str) -> str:
-    if "example.com" in source_url:
+    if is_demo_url(source_url):
         return (
             f"demo placeholder source URL: {source_url} "
             "(not a live Reddit URL; run live Reddit collection for a public Reddit link)"
         )
     return f"source URL: {source_url}"
+
+
+def format_vector_post_details(hit: VectorSearchHit) -> str:
+    author = hit.public_author_name or "not publicly available"
+    author_url = f", public author URL: {hit.public_author_url}" if hit.public_author_url else ""
+    author_note = f", author note: {hit.public_author_note}" if hit.public_author_note else ""
+    return (
+        f"Post {hit.id}: source Reddit, published {hit.published_at.isoformat()}, "
+        f"source URL: {hit.source_url}, author: {author}{author_url}{author_note}, "
+        f"company: {hit.company}, product: {hit.product or 'unknown'}, "
+        f"sentiment score: {hit.sentiment_score}, topics: {', '.join(hit.topics)}, "
+        f"text: {hit.text}"
+    )
+
+
+def is_demo_url(source_url: str) -> bool:
+    return "example.com" in source_url

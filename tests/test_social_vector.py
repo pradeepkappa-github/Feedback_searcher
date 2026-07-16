@@ -28,7 +28,12 @@ def test_vector_search_returns_relevant_feedback(tmp_path: Path):
 
     hits = store.search("Houston fiber outage status page", limit=1)
 
+    assert hits == []
+
+    hits = store.search("Houston fiber outage status page", include_demo=True, limit=1)
+
     assert hits
+    assert hits[0].is_demo is True
     assert hits[0].company == "AT&T"
     assert "Network outage" in hits[0].topics
 
