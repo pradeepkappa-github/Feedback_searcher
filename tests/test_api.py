@@ -57,3 +57,21 @@ def test_assistant_can_show_example_posts():
     assert "publication dates" in payload["answer"]
     assert "2026-07-" in payload["answer"]
     assert payload["supporting_record_ids"]
+
+
+def test_assistant_returns_reddit_post_details():
+    response = client.post(
+        "/api/assistant/ask",
+        json={
+            "question": "what is post in reddit and provide the all the details of post",
+            "company": "AT&T",
+            "days": 7,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "available Reddit post details" in payload["answer"]
+    assert "published" in payload["answer"]
+    assert "author:" in payload["answer"]
+    assert "source URL:" in payload["answer"]

@@ -19,6 +19,24 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
     top = ranked[:3]
     normalized_question = question.question.strip().lower()
 
+    if is_reddit_post_detail_question(normalized_question):
+        reddit_records = [record for record in records if record.source.lower() == "reddit"]
+        reddit_top = sorted(reddit_records, key=priority_score, reverse=True)[:3]
+        details = " ".join(format_post_details(record) for record in reddit_top)
+        answer = (
+            "Here are the available Reddit post details from the filtered feedback set. "
+            f"{details or 'No Reddit posts are available for the selected filters.'} "
+            "Only public source metadata is shown; private identity or contact details "
+            "are not inferred."
+        )
+        return AssistantResponse(
+            answer=answer,
+            confidence=0.92 if reddit_top else 0.35,
+            records_analyzed=len(reddit_records),
+            supporting_record_ids=[record.id for record in reddit_top],
+            supporting_source_urls=[record.source_url for record in reddit_top],
+        )
+
     if is_post_definition_question(normalized_question):
         answer = (
             "A post is one collected public feedback item, such as a Reddit discussion, "
@@ -96,6 +114,22 @@ def is_post_definition_question(question: str) -> bool:
     )
 
 
+def is_reddit_post_detail_question(question: str) -> bool:
+    wants_details = any(
+        phrase in question
+        for phrase in [
+            "all the details",
+            "provide the details",
+            "post details",
+            "details of post",
+            "who posted",
+            "who is author",
+            "author information",
+        ]
+    )
+    return "reddit" in question and ("post" in question or wants_details) and wants_details
+
+
 def is_example_post_question(question: str) -> bool:
     return any(
         phrase in question
@@ -107,4 +141,22 @@ def is_example_post_question(question: str) -> bool:
             "latest post",
             "recent post",
         ]
+    )
+
+
+def format_post_details(record) -> str:
+    author = record.public_author_name or record.author_reference
+    author_url = (
+        f", public author URL: {record.public_author_url}" if record.public_author_url else ""
+    )
+    author_note = f", author note: {record.public_author_note}" if record.public_author_note else ""
+    location = record.location or "not publicly available"
+    return (
+        f"Post {record.id}: source Reddit, published {record.published_at.isoformat()}, "
+        f"source URL: {record.source_url}, author: {author}{author_url}{author_note}, "
+        f"company: {record.analysis.company}, product: {record.analysis.product or 'unknown'}, "
+        f"location: {location}, sentiment: {record.analysis.sentiment_label} "
+        f"({record.analysis.sentiment_score}), emotion: {record.analysis.emotion}, "
+        f"topics: {', '.join(record.analysis.topics)}, confidence: {record.analysis.confidence}, "
+        f"text: {record.cleaned_text}"
     )
