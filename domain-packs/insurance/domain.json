@@ -1,0 +1,10 @@
+{
+  "domain": "insurance",
+  "companies": [],
+  "products": ["Auto", "Home", "Life", "Health", "Commercial"],
+  "complaint_categories": ["Claims", "Premiums", "Policy renewal", "Coverage denial", "Adjuster experience", "Settlement delays"],
+  "customer_journey_stages": ["Quote", "Purchase", "Policy service", "Claim", "Renewal", "Cancellation"],
+  "priority_rules": ["volume", "sentiment_severity", "rate_of_increase", "customer_impact", "source_credibility"],
+  "industry_vocabulary": ["deductible", "claim denial", "adjuster", "premium", "settlement"]
+}
+
