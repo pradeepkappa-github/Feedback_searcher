@@ -72,6 +72,16 @@ curl -X POST http://127.0.0.1:8000/api/sources/social/collect \
   -d '{"mock":true,"query_terms":["AT&T","Verizon","T-Mobile","Xfinity Mobile"]}'
 ```
 
+Fetch one live public Reddit feed item and index it:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/sources/social/collect \
+  -H "Content-Type: application/json" \
+  -d '{"connectors":["reddit"],"mock":false,"query_terms":["AT&T fiber outage"]}'
+```
+
+Reddit may rate-limit repeated public feed requests. For production-grade ingestion, configure OAuth/API credentials and implement the official Reddit API client in `connectors/social/platforms.py`.
+
 Search the local vector store:
 
 ```bash

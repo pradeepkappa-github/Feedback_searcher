@@ -33,7 +33,7 @@ def collect_analyze_and_vectorize(
             CollectionRunResult(
                 connector=connector.config.name,
                 platform=connector.config.platform,
-                mode=connector.config.mode,
+                mode="mock" if request.mock else "public_feed",
                 records_collected=len(collected),
                 records_stored=0,
                 vector_documents_stored=0,

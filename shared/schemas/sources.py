@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
 
-ConnectorMode = Literal["mock", "official_api"]
+ConnectorMode = Literal["mock", "official_api", "public_feed"]
 
 
 class SourceConnectorConfig(BaseModel):
