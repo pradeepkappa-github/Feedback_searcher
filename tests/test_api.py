@@ -32,3 +32,26 @@ def test_assistant_returns_grounded_answer():
     assert payload["records_analyzed"] >= 1
     assert payload["supporting_record_ids"]
 
+
+def test_assistant_explains_post_definition():
+    response = client.post(
+        "/api/assistant/ask",
+        json={"question": "what is post", "company": "AT&T", "days": 7},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "collected public feedback item" in payload["answer"]
+    assert payload["confidence"] >= 0.9
+
+
+def test_assistant_can_show_example_posts():
+    response = client.post(
+        "/api/assistant/ask",
+        json={"question": "show me post examples", "company": "AT&T", "days": 7},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "example posts" in payload["answer"]
+    assert payload["supporting_record_ids"]

@@ -17,6 +17,40 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
 
     ranked = sorted(records, key=priority_score, reverse=True)
     top = ranked[:3]
+    normalized_question = question.question.strip().lower()
+
+    if is_post_definition_question(normalized_question):
+        answer = (
+            "A post is one collected public feedback item, such as a Reddit discussion, "
+            "app-store review, complaint record, social-media mention, or telecom forum entry. "
+            "The platform stores each post with its source URL, original text, anonymized author "
+            "reference, company, product, location when available, sentiment, topics, confidence, "
+            "and the AI summary used for search and executive stories."
+        )
+        return AssistantResponse(
+            answer=answer,
+            confidence=0.96,
+            records_analyzed=len(records),
+            supporting_record_ids=[record.id for record in top],
+            supporting_source_urls=[record.source_url for record in top],
+        )
+
+    if is_example_post_question(normalized_question):
+        examples = "; ".join(
+            f"{record.source}: {record.cleaned_text}" for record in top
+        )
+        answer = (
+            "Here are example posts currently in the filtered feedback set. "
+            f"{examples or 'No matching posts are available for the selected filters.'}"
+        )
+        return AssistantResponse(
+            answer=answer,
+            confidence=0.9 if top else 0.4,
+            records_analyzed=len(records),
+            supporting_record_ids=[record.id for record in top],
+            supporting_source_urls=[record.source_url for record in top],
+        )
+
     topic_counts: dict[str, int] = {}
     for record in records:
         for topic in record.analysis.topics:
@@ -41,4 +75,31 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
         records_analyzed=len(records),
         supporting_record_ids=[record.id for record in top],
         supporting_source_urls=[record.source_url for record in top],
+    )
+
+
+def is_post_definition_question(question: str) -> bool:
+    return any(
+        phrase in question
+        for phrase in [
+            "what is post",
+            "what is a post",
+            "what are posts",
+            "define post",
+            "meaning of post",
+        ]
+    )
+
+
+def is_example_post_question(question: str) -> bool:
+    return any(
+        phrase in question
+        for phrase in [
+            "show post",
+            "show me post",
+            "example post",
+            "sample post",
+            "latest post",
+            "recent post",
+        ]
     )
