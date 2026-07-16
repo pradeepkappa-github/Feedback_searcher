@@ -6,6 +6,13 @@ from shared.schemas.feedback import (
     RawFeedbackRecord,
     SourceStatus,
 )
+from shared.schemas.sources import (
+    CollectionRunResult,
+    SocialCollectionRequest,
+    SourceConnectorConfig,
+    VectorSearchHit,
+    VectorSearchRequest,
+)
 
 __all__ = [
     "AnalysisResult",
@@ -14,5 +21,9 @@ __all__ = [
     "FeedbackRecord",
     "RawFeedbackRecord",
     "SourceStatus",
+    "CollectionRunResult",
+    "SocialCollectionRequest",
+    "SourceConnectorConfig",
+    "VectorSearchHit",
+    "VectorSearchRequest",
 ]
-

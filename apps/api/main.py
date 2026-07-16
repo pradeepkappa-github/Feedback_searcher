@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from apps.api.core.config import settings
-from apps.api.routers import analytics, assistant, domain, feedback, sources
+from apps.api.routers import analytics, assistant, domain, feedback, social, sources
 from shared.observability.logging import configure_logging
 
 configure_logging()
@@ -25,6 +25,7 @@ app.include_router(feedback.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(assistant.router, prefix="/api")
 app.include_router(sources.router, prefix="/api")
+app.include_router(social.router, prefix="/api")
 app.include_router(domain.router, prefix="/api")
 
 WEB_ROOT = Path(__file__).resolve().parents[1] / "web"
@@ -39,4 +40,3 @@ def dashboard() -> FileResponse:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok", "service": settings.app_name, "environment": settings.app_env}
-

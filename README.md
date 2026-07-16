@@ -50,7 +50,38 @@ curl -X POST http://127.0.0.1:8000/api/assistant/ask \
   -d '{"question":"Why has AT&T customer sentiment declined during the past seven days?","company":"AT&T"}'
 ```
 
+## Social and Community Source Collection
+
+The platform includes connector scaffolding for:
+
+- LinkedIn
+- Facebook
+- Instagram
+- X
+- Truth Social
+- Reddit
+- Telecom community forums
+
+By default, `SOCIAL_CONNECTOR_MODE=mock` creates realistic telecom feedback records for local development. Production collection must be implemented through official APIs, approved exports, written permission, or platform-specific compliant access. Scraping is intentionally not implemented.
+
+Trigger a local mock collection and vector indexing run:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/sources/social/collect \
+  -H "Content-Type: application/json" \
+  -d '{"mock":true,"query_terms":["AT&T","Verizon","T-Mobile","Xfinity Mobile"]}'
+```
+
+Search the local vector store:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/vector/search \
+  -H "Content-Type: application/json" \
+  -d '{"query":"fiber outage technician appointment Dallas","limit":5}'
+```
+
+The first implementation uses a deterministic local hashed embedding store at `data/vector_store.json`. It is meant as a swappable interface for Qdrant, Chroma, pgvector, OpenSearch vector search, or an existing enterprise vector database.
+
 ## Compliance Principles
 
 Collection code must respect website terms, robots rules, API policies, rate limits, and privacy requirements. Feedback records retain source attribution and anonymized author references. PII masking belongs in the processing pipeline before records are used for analytics or summaries.
-

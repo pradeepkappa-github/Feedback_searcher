@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from connectors.social.registry import connector_configs
 from shared.schemas.feedback import SourceStatus
 
 router = APIRouter(tags=["sources"])
@@ -43,5 +44,14 @@ def source_status() -> list[SourceStatus]:
             average_latency_ms=1000,
             policy_note="Provider API only; no scraping.",
         ),
+        *[
+            SourceStatus(
+                name=config.name,
+                status="Review" if config.mode == "official_api" else "Healthy",
+                records_collected=0,
+                average_latency_ms=0,
+                policy_note=config.policy_note,
+            )
+            for config in connector_configs()
+        ],
     ]
-
