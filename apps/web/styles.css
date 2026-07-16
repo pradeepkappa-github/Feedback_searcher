@@ -207,6 +207,11 @@ input {
   cursor: pointer;
 }
 
+.ask-box button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 #answer {
   margin-bottom: 0;
   color: var(--muted);
@@ -413,4 +418,3 @@ pre {
     grid-template-columns: 102px 1fr 42px;
   }
 }
-

@@ -176,25 +176,56 @@ function renderFeedback() {
 }
 
 async function askQuestion() {
+  const question = $("#question").value.trim();
+  const askButton = $("#askButton");
+  const answer = $("#answer");
+  if (!question) {
+    answer.textContent = "Enter a question first.";
+    return;
+  }
+
+  askButton.disabled = true;
+  askButton.textContent = "Thinking...";
+  answer.textContent = `Thinking about: ${question}`;
+
   const payload = {
-    question: $("#question").value,
+    question,
     company: state.company || undefined,
     days: 7
   };
-  const response = await api("/api/assistant/ask", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-  $("#answer").textContent = `${response.answer} Confidence ${percent(response.confidence)} from ${response.records_analyzed} records.`;
-  $("#storyConfidence").textContent = `${percent(response.confidence)} confidence`;
-  $("#storyBody").innerHTML = `
-    <h4>What happened?</h4>
-    <p>${escapeHtml(response.answer)}</p>
-    <h4>Evidence</h4>
-    <p>Supporting records: ${response.supporting_record_ids.map(escapeHtml).join(", ") || "none"}</p>
-    <h4>Grounding</h4>
-    <p>Every story response returns source URLs, record IDs, confidence, and the number of records analyzed.</p>
-  `;
+
+  try {
+    const response = await api("/api/assistant/ask", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const answeredAt = new Date().toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    answer.textContent = [
+      `Answered ${answeredAt}: ${response.answer}`,
+      `Confidence ${percent(response.confidence)} from ${response.records_analyzed} records.`
+    ].join(" ");
+    $("#storyConfidence").textContent = `${percent(response.confidence)} confidence`;
+    $("#storyBody").innerHTML = `
+      <h4>Question</h4>
+      <p>${escapeHtml(question)}</p>
+      <h4>What happened?</h4>
+      <p>${escapeHtml(response.answer)}</p>
+      <h4>Evidence</h4>
+      <p>Supporting records: ${response.supporting_record_ids.map(escapeHtml).join(", ") || "none"}</p>
+      <h4>Grounding</h4>
+      <p>Every story response returns source URLs, record IDs, confidence, and the number of records analyzed.</p>
+    `;
+  } catch (error) {
+    console.error(error);
+    answer.textContent = `Ask AI failed: ${error.message}`;
+  } finally {
+    askButton.disabled = false;
+    askButton.textContent = "Ask AI";
+  }
 }
 
 function renderSources() {
@@ -228,4 +259,3 @@ init().catch((error) => {
   $("#heroTitle").textContent = "Unable to load feedback intelligence.";
   $("#heroDetail").textContent = error.message;
 });
-
