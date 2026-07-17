@@ -62,7 +62,7 @@ def ask_assistant(question: AssistantQuestion, repo=Depends(get_repository)) -> 
         return AssistantResponse(
             answer=answer,
             confidence=0.92 if reddit_top else 0.35,
-            records_analyzed=len(reddit_records),
+            records_analyzed=len(live_reddit_records),
             supporting_record_ids=[record.id for record in reddit_top],
             supporting_source_urls=[record.source_url for record in reddit_top],
         )
@@ -193,7 +193,7 @@ def format_post_details(record) -> str:
         f"location: {location}, sentiment: {record.analysis.sentiment_label} "
         f"({record.analysis.sentiment_score}), emotion: {record.analysis.emotion}, "
         f"topics: {', '.join(record.analysis.topics)}, confidence: {record.analysis.confidence}, "
-        f"text: {record.cleaned_text}"
+        f"post text captured from public feed: {record.cleaned_text}"
     )
 
 
@@ -215,7 +215,7 @@ def format_vector_post_details(hit: VectorSearchHit) -> str:
         f"source URL: {hit.source_url}, author: {author}{author_url}{author_note}, "
         f"company: {hit.company}, product: {hit.product or 'unknown'}, "
         f"sentiment score: {hit.sentiment_score}, topics: {', '.join(hit.topics)}, "
-        f"text: {hit.text}"
+        f"post text captured from public feed: {hit.text}"
     )
 
 

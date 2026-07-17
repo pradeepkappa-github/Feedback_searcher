@@ -91,3 +91,87 @@ def test_reddit_live_rss_collects_one_public_record(monkeypatch):
     assert str(records[0].public_author_url) == "https://www.reddit.com/user/public_user"
     assert "profile URL" in records[0].public_author_note
     assert "fiber is down" in records[0].text
+
+
+def test_reddit_live_rss_skips_non_post_records(monkeypatch):
+    rss = b"""<?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <entry>
+        <id>reddit-community-1</id>
+        <title>AT&amp;T Fiber</title>
+        <updated>2026-07-16T20:01:02+00:00</updated>
+        <link rel="alternate" href="https://www.reddit.com/r/ATTFiber/" />
+        <content type="html">
+          &lt;p&gt;Discussion of all things AT&amp;T Fiber.&lt;/p&gt;
+        </content>
+      </entry>
+    </feed>
+    """
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self):
+            return rss
+
+    monkeypatch.setattr(
+        "connectors.social.platforms.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    connector = RedditConnector(
+        SourceConnectorConfig(
+            name="Reddit",
+            platform="reddit",
+            policy_note="Use Reddit public feeds or API within policy.",
+        )
+    )
+
+    assert connector.collect(["AT&T", "fiber"], mock=False) == []
+
+
+def test_reddit_live_rss_skips_non_telecom_post_records(monkeypatch):
+    rss = b"""<?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <entry>
+        <id>reddit-post-2</id>
+        <title>Critique my throwing mechanics</title>
+        <updated>2026-07-16T20:01:02+00:00</updated>
+        <author>
+          <name>u/public_user</name>
+        </author>
+        <link rel="alternate" href="https://www.reddit.com/r/example/comments/post2/example" />
+        <content type="html">
+          &lt;p&gt;I mainly rely on free information on the internet
+          for football practice.&lt;/p&gt;
+        </content>
+      </entry>
+    </feed>
+    """
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self):
+            return rss
+
+    monkeypatch.setattr(
+        "connectors.social.platforms.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+    connector = RedditConnector(
+        SourceConnectorConfig(
+            name="Reddit",
+            platform="reddit",
+            policy_note="Use Reddit public feeds or API within policy.",
+        )
+    )
+
+    assert connector.collect(["AT&T", "internet outage"], mock=False) == []

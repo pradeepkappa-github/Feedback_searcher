@@ -1,4 +1,5 @@
 import hashlib
+import re
 from datetime import UTC, datetime
 from html import unescape
 from urllib.parse import urlencode
@@ -142,8 +143,6 @@ class RedditConnector(BaseSocialConnector):
         root = ElementTree.fromstring(feed_xml)
         entries = root.findall("atom:entry", ATOM_NS)
         entry = next((item for item in entries if entry_url(item).find("/comments/") >= 0), None)
-        if entry is None and entries:
-            entry = entries[0]
         if entry is None:
             return []
 
@@ -155,6 +154,8 @@ class RedditConnector(BaseSocialConnector):
         source_url = entry_url(entry) or "https://www.reddit.com"
         entry_id = text_or_empty(entry, "atom:id") or source_url
         text = clean_feed_text(f"{title}. {content}")
+        if not has_telecom_context(text):
+            return []
 
         return [
             RawFeedbackRecord(
@@ -222,6 +223,8 @@ def entry_url(entry: ElementTree.Element) -> str:
 
 def clean_feed_text(value: str) -> str:
     text = unescape(value)
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
+    text = re.sub(r"<[^>]+>", " ", text)
     for left, right in [
         ("<p>", " "),
         ("</p>", " "),
@@ -255,7 +258,7 @@ def detect_company_hint(text: str, query_terms: list[str]) -> str | None:
     lower = text.lower()
     companies = ["AT&T", "Verizon", "T-Mobile", "Xfinity Mobile"]
     for company in companies:
-        if company.lower() in lower or company in query_terms:
+        if company.lower() in lower:
             return company
     return None
 
@@ -269,3 +272,30 @@ def detect_product_hint(text: str) -> str | None:
     if "internet" in lower:
         return "Broadband"
     return None
+
+
+def has_telecom_context(text: str) -> bool:
+    lower = text.lower()
+    telecom_terms = [
+        "at&t",
+        "att fiber",
+        "verizon",
+        "t-mobile",
+        "tmobile",
+        "xfinity",
+        "internet outage",
+        "internet service",
+        "internet bill",
+        "home internet",
+        "fiber internet",
+        "wireless",
+        "broadband",
+        "cell service",
+        "mobile plan",
+        "coverage",
+        "outage",
+        "router",
+        "modem",
+        "isp",
+    ]
+    return any(term in lower for term in telecom_terms)
