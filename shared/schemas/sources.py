@@ -62,4 +62,5 @@ class VectorSearchHit(BaseModel):
     public_author_name: str | None = None
     public_author_url: HttpUrl | None = None
     public_author_note: str | None = None
+    comment_conclusion: str | None = None
     is_demo: bool = False

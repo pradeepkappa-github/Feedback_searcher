@@ -156,6 +156,10 @@ def is_reddit_post_detail_question(question: str) -> bool:
             "explain post",
             "what is post in reddit",
             "what is a post in reddit",
+            "post comments",
+            "comments conclusion",
+            "final conclusion",
+            "extract final conclusion",
             "who posted",
             "who is author",
             "author information",
@@ -210,12 +214,15 @@ def format_vector_post_details(hit: VectorSearchHit) -> str:
     author = hit.public_author_name or "not publicly available"
     author_url = f", public author URL: {hit.public_author_url}" if hit.public_author_url else ""
     author_note = f", author note: {hit.public_author_note}" if hit.public_author_note else ""
+    comment_conclusion = (
+        f", comments conclusion: {hit.comment_conclusion}" if hit.comment_conclusion else ""
+    )
     return (
         f"Post {hit.id}: source Reddit, published {hit.published_at.isoformat()}, "
         f"source URL: {hit.source_url}, author: {author}{author_url}{author_note}, "
         f"company: {hit.company}, product: {hit.product or 'unknown'}, "
         f"sentiment score: {hit.sentiment_score}, topics: {', '.join(hit.topics)}, "
-        f"post text captured from public feed: {hit.text}"
+        f"post text captured from public feed: {hit.text}{comment_conclusion}"
     )
 
 

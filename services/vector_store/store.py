@@ -39,6 +39,7 @@ class LocalVectorStore:
                 if record.public_author_url
                 else None,
                 "public_author_note": record.public_author_note,
+                "comment_conclusion": None,
                 "company": record.analysis.company,
                 "product": record.analysis.product,
                 "topics": record.analysis.topics,
