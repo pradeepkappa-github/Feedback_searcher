@@ -128,9 +128,24 @@ class RedditConnector(BaseSocialConnector):
 
     def collect_live_rss(self, query_terms: list[str]) -> list[RawFeedbackRecord]:
         query = " ".join(query_terms or ["AT&T", "Verizon", "T-Mobile", "Xfinity Mobile"])
-        params = urlencode({"q": query, "sort": "new", "t": "month"})
+        search_params = urlencode({"q": query, "sort": "new", "t": "month"})
+        feed_urls = [f"https://www.reddit.com/search.rss?{search_params}"]
+        feed_urls.extend(reddit_subreddit_feed_urls(query))
+
+        for feed_url in feed_urls:
+            try:
+                record = self.collect_first_matching_feed_record(feed_url, query_terms)
+            except Exception:
+                continue
+            if record is not None:
+                return [record]
+        return []
+
+    def collect_first_matching_feed_record(
+        self, feed_url: str, query_terms: list[str]
+    ) -> RawFeedbackRecord | None:
         request = Request(
-            f"https://www.reddit.com/search.rss?{params}",
+            feed_url,
             headers={
                 "User-Agent": "FeedbackFinderAI/0.1 public feedback research",
                 "Accept": "application/atom+xml, application/xml;q=0.9, */*;q=0.8",
@@ -139,26 +154,22 @@ class RedditConnector(BaseSocialConnector):
 
         with urlopen(request, timeout=15) as response:
             feed_xml = response.read()
-
         root = ElementTree.fromstring(feed_xml)
         entries = root.findall("atom:entry", ATOM_NS)
-        entry = next((item for item in entries if entry_url(item).find("/comments/") >= 0), None)
-        if entry is None:
-            return []
-
-        title = text_or_empty(entry, "atom:title")
-        content = text_or_empty(entry, "atom:content")
-        updated = text_or_empty(entry, "atom:updated")
-        author_name = text_or_empty(entry, "atom:author/atom:name")
-        author_uri = text_or_empty(entry, "atom:author/atom:uri")
-        source_url = entry_url(entry) or "https://www.reddit.com"
-        entry_id = text_or_empty(entry, "atom:id") or source_url
-        text = clean_feed_text(f"{title}. {content}")
-        if not has_telecom_context(text):
-            return []
-
-        return [
-            RawFeedbackRecord(
+        for entry in entries:
+            source_url = entry_url(entry)
+            if "/comments/" not in source_url:
+                continue
+            title = text_or_empty(entry, "atom:title")
+            content = text_or_empty(entry, "atom:content")
+            updated = text_or_empty(entry, "atom:updated")
+            author_name = text_or_empty(entry, "atom:author/atom:name")
+            author_uri = text_or_empty(entry, "atom:author/atom:uri")
+            entry_id = text_or_empty(entry, "atom:id") or source_url
+            text = clean_feed_text(f"{title}. {content}")
+            if not has_telecom_context(text):
+                continue
+            return RawFeedbackRecord(
                 source=self.config.name,
                 source_url=source_url,
                 company_hint=detect_company_hint(text, query_terms),
@@ -171,7 +182,7 @@ class RedditConnector(BaseSocialConnector):
                 public_author_note=public_author_note(author_name, author_uri),
                 location=None,
             )
-        ]
+        return None
 
 
 class TelecomCommunityForumConnector(BaseSocialConnector):
@@ -207,6 +218,25 @@ CONNECTOR_TYPES = {
 def build_connector(config: SourceConnectorConfig, credential_value: str | None = None):
     connector_type = CONNECTOR_TYPES[config.platform]
     return connector_type(config, credential_value)
+
+
+def reddit_subreddit_feed_urls(query: str) -> list[str]:
+    lower = query.lower()
+    subreddits = []
+    if "at&t" in lower or "att" in lower or "fiber" in lower:
+        subreddits.extend(["ATT", "ATTFiber"])
+    if "verizon" in lower:
+        subreddits.extend(["verizon", "verizonisp"])
+    if "t-mobile" in lower or "tmobile" in lower:
+        subreddits.append("tmobile")
+    if "xfinity" in lower or "comcast" in lower:
+        subreddits.extend(["Comcast_Xfinity", "xfinity"])
+    if not subreddits:
+        subreddits.extend(["ATT", "ATTFiber", "verizon", "tmobile", "Comcast_Xfinity"])
+    return [
+        f"https://www.reddit.com/r/{subreddit}/new/.rss"
+        for subreddit in dict.fromkeys(subreddits)
+    ]
 
 
 def text_or_empty(entry: ElementTree.Element, selector: str) -> str:
@@ -276,13 +306,16 @@ def detect_product_hint(text: str) -> str | None:
 
 def has_telecom_context(text: str) -> bool:
     lower = text.lower()
-    telecom_terms = [
+    company_terms = [
         "at&t",
+        "att ",
         "att fiber",
         "verizon",
         "t-mobile",
         "tmobile",
         "xfinity",
+    ]
+    service_terms = [
         "internet outage",
         "internet service",
         "internet bill",
@@ -298,4 +331,6 @@ def has_telecom_context(text: str) -> bool:
         "modem",
         "isp",
     ]
-    return any(term in lower for term in telecom_terms)
+    return any(term in lower for term in company_terms) or sum(
+        1 for term in service_terms if term in lower
+    ) >= 2
