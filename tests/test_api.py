@@ -81,3 +81,20 @@ def test_assistant_returns_reddit_post_details():
         "author:" in payload["answer"]
         or "Run live Reddit collection first" in payload["answer"]
     )
+
+
+def test_assistant_explains_reddit_post_with_live_details():
+    response = client.post(
+        "/api/assistant/ask",
+        json={
+            "question": "what is post in reddit and explain the post",
+            "company": "AT&T",
+            "days": 7,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "available live Reddit post details" in payload["answer"]
+    assert "collected public feedback item" not in payload["answer"]
+    assert "example.com" not in payload["answer"]
