@@ -114,3 +114,15 @@ def test_assistant_routes_reddit_comment_conclusion_questions():
     payload = response.json()
     assert "available live Reddit post details" in payload["answer"]
     assert "example.com" not in payload["answer"]
+
+
+def test_assistant_routes_reddit_posts_of_company_questions():
+    response = client.post(
+        "/api/assistant/ask",
+        json={"question": "Reddit posts of AT&T", "days": 90},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "available live Reddit post details" in payload["answer"]
+    assert "example.com" not in payload["answer"]

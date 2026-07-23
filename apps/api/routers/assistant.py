@@ -145,6 +145,9 @@ def is_post_definition_question(question: str) -> bool:
 
 
 def is_reddit_post_detail_question(question: str) -> bool:
+    asks_for_reddit_posts = "reddit" in question and (
+        "post" in question or "posts" in question
+    )
     wants_details = any(
         phrase in question
         for phrase in [
@@ -165,7 +168,7 @@ def is_reddit_post_detail_question(question: str) -> bool:
             "author information",
         ]
     )
-    return "reddit" in question and ("post" in question or wants_details) and wants_details
+    return asks_for_reddit_posts or ("reddit" in question and wants_details)
 
 
 def is_example_post_question(question: str) -> bool:
